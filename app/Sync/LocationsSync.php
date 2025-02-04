@@ -32,6 +32,8 @@ class LocationsSync extends BaseSync {
 		$vdm_id      = (string) $api_location->location_id;
 		$location    = Location::get_by_vdm_id( $vdm_id );
 		$location_id = 0;
+		$update      = false;
+		
 		if ( $location instanceof Location ) {
 			$location_id = $location->get_id();
 		}
@@ -54,6 +56,7 @@ class LocationsSync extends BaseSync {
 			$term_result = wp_insert_term( $api_location->location_name, Location::$taxonomy, $term_data );
 		} else {
 			$term_result = wp_update_term( $location_id, Location::$taxonomy, $term_data );
+			$update      = true;
 		}
 
 		if ( $term_result instanceof WP_Error || ! isset( $term_result['term_id'] ) || ! $term_result['term_id'] ) {
@@ -71,7 +74,7 @@ class LocationsSync extends BaseSync {
 		update_term_meta( $location_id, 'll_vdm_country', $api_location->location_country ?? null );
 		update_term_meta( $location_id, 'll_vdm_phone', $api_location->location_phone ?? null );
 
-		do_action( 'll_vdm_after_insert_location', $location_id, $api_location );
+		do_action( 'll_vdm_after_insert_location', $location_id, $api_location, $update );
 		return $location_id;
 	}
 }
